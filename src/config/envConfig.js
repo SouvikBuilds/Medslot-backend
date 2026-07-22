@@ -1,0 +1,18 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+const config = {
+  PORT: process.env.PORT,
+  ORIGIN: process.env.ORIGIN,
+  DB_NAME: process.env.DB_NAME,
+  MONGO_URI: process.env.MONGO_URI,
+  accessToken: process.env.accessToken,
+  magicToken: process.env.magicToken,
+  accessTokenExpiry: process.env.accessTokenExpiry,
+  refreshToken: process.env.refreshToken,
+  regfreshTokenExpiry: process.env.regfreshTokenExpiry,
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASS: process.env.SMTP_PASS,
+};
+
+export default config;
