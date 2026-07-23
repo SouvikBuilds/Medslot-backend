@@ -8,14 +8,17 @@ import {
   requestMagicLink,
   verifyMagicLink,
 } from "../controllers/user.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import {
+  verifyJWT,
+  magicAuthMiddleware,
+} from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/refresh-token", refreshAccessToken);
-router.post("/magic-link", requestMagicLink);
+router.post("/magic-link", magicAuthMiddleware, requestMagicLink);
 router.post("/magic-login", verifyMagicLink);
 
 // protected routes

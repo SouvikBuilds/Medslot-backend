@@ -4,6 +4,12 @@ import { asyncHandler, ApiError, ApiResponse } from "../utils/index.js";
 import config from "../config/envConfig.js";
 import { sendMail } from "../service/mail.service.js";
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+};
+
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -40,26 +46,21 @@ const generateAccessAndRefreshToken = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
-  if (
-    !name ||
-    !email ||
-    !password ||
-    name.trim() === "" ||
-    email.trim() === "" ||
-    password.trim() === ""
-  ) {
+  if (!name?.trim() || !email?.trim() || !password?.trim()) {
     throw new ApiError(400, "All fields are required and they can't be empty");
   }
 
-  const userExistence = await User.findOne({ email });
+  const userExistence = await User.findOne({
+    email: email.trim(),
+  });
 
   if (userExistence) {
     throw new ApiError(409, "User with this email already exists");
   }
 
   const newUser = await User.create({
-    name,
-    email,
+    name: name.trim(),
+    email: email.trim(),
     password,
   });
 
@@ -75,11 +76,13 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password || email.trim() === "" || password.trim() === "") {
+  if (!email?.trim() || !password?.trim()) {
     throw new ApiError(400, "Email and password are required");
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({
+    email: email.trim(),
+  });
 
   if (!user) {
     throw new ApiError(404, "User does not exist");
@@ -95,16 +98,10 @@ const loginUser = asyncHandler(async (req, res) => {
     user._id,
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  };
-
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
       new ApiResponse(
         200,
@@ -114,8 +111,6 @@ const loginUser = asyncHandler(async (req, res) => {
             name: user.name,
             email: user.email,
           },
-          accessToken,
-          refreshToken,
         },
         "User logged in successfully",
       ),
@@ -151,30 +146,17 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken: newRefreshToken } =
     await generateAccessAndRefreshToken(user._id);
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  };
-
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", newRefreshToken, options)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          accessToken,
-          refreshToken: newRefreshToken,
-        },
-        "Access token refreshed successfully",
-      ),
-    );
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", newRefreshToken, cookieOptions)
+    .json(new ApiResponse(200, {}, "Access token refreshed successfully"));
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
+  console.log("Logout calling");
   if (!req.user?._id) {
+    console.log("User not authenticated");
     throw new ApiError(403, "User is not authenticated");
   }
 
@@ -190,16 +172,10 @@ const logOutUser = asyncHandler(async (req, res) => {
     },
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  };
-
   return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
@@ -212,11 +188,13 @@ const getUser = asyncHandler(async (req, res) => {
 const requestMagicLink = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
-  if (!email || email.trim() === "") {
+  if (!email?.trim()) {
     throw new ApiError(400, "Email is required");
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({
+    email: email.trim(),
+  });
 
   if (!user) {
     throw new ApiError(404, "User with this email does not exist");
@@ -299,16 +277,10 @@ const verifyMagicLink = asyncHandler(async (req, res) => {
     user._id,
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  };
-
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
       new ApiResponse(
         200,
@@ -318,8 +290,6 @@ const verifyMagicLink = asyncHandler(async (req, res) => {
             name: user.name,
             email: user.email,
           },
-          accessToken,
-          refreshToken,
         },
         "User logged in successfully using magic link",
       ),
