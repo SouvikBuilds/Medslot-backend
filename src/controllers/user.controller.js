@@ -98,6 +98,8 @@ const loginUser = asyncHandler(async (req, res) => {
     user._id,
   );
 
+  console.log(user);
+
   return res
     .status(200)
     .cookie("accessToken", accessToken, cookieOptions)
@@ -110,6 +112,7 @@ const loginUser = asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            role: user.role,
           },
         },
         "User logged in successfully",
@@ -289,6 +292,7 @@ const verifyMagicLink = asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            role: user.role,
           },
         },
         "User logged in successfully using magic link",
@@ -304,4 +308,5 @@ export {
   getUser,
   requestMagicLink,
   verifyMagicLink,
+  generateAccessAndRefreshToken,
 };

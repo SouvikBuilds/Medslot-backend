@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import config from "./config/envConfig.js";
-import userRouter from "./routes/user.route.js";
+
 const app = express();
 
 app.use(express.json({ limit: "16kb" }));
@@ -21,6 +21,11 @@ app.get("/", (req, res) => {
   res.json({ message: "Hello World" });
 });
 
+import userRouter from "./routes/user.route.js";
+import doctorRouter from "./routes/doctor.route.js";
+import mesageRouter from "./routes/message.route.js";
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/doctors", doctorRouter);
+app.use("/api/v1/messages", mesageRouter);
 
 export default app;
