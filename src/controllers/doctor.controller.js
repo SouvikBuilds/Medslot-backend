@@ -146,36 +146,13 @@ const logOutDoctor = asyncHandler(async (req, res) => {
 });
 
 const getAllDoctors = asyncHandler(async (req, res) => {
-  const page = Math.max(parseInt(req.query.page) || 1, 1);
-  const limit = Math.max(parseInt(req.query.limit) || 10, 1);
-  const skip = (page - 1) * limit;
+  const doctors = await Doctor.find()
+    .sort({ createdAt: -1 })
+    .select("-password -refreshToken");
 
-  const [doctors, totalDoctors] = await Promise.all([
-    Doctor.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .select("-password -refreshToken"),
-    Doctor.countDocuments(),
-  ]);
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        doctors,
-        pagination: {
-          totalItems: totalDoctors,
-          totalPages: Math.ceil(totalDoctors / limit),
-          currentPage: page,
-          limit,
-          hasNextPage: page < Math.ceil(totalDoctors / limit),
-          hasPrevPage: page > 1,
-        },
-      },
-      "All doctors fetched successfully",
-    ),
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, doctors, "Doctors fetched Successfully"));
 });
 
 const getDoctorById = asyncHandler(async (req, res) => {

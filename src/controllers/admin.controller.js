@@ -10,73 +10,27 @@ import {
   deleteFromCloudinary,
 } from "../utils/index.js";
 import { generateAccessAndRefreshToken } from "./user.controller.js";
+import { sendMail } from "../service/mail.service.js";
 
 const getAllUsers = asyncHandler(async (req, res) => {
-  const page = Math.max(parseInt(req.query.page) || 1, 1);
-  const limit = Math.max(parseInt(req.query.limit) || 10, 1);
-  const skip = (page - 1) * limit;
+  const users = await User.find()
+    .sort({ createdAt: -1 })
+    .select("-password -refreshToken");
 
-  const [users, totalUsers] = await Promise.all([
-    User.find({ role: "user" })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .select("-password -refreshToken"),
-    User.countDocuments({ role: "user" }),
-  ]);
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        users,
-        pagination: {
-          totalItems: totalUsers,
-          totalPages: Math.ceil(totalUsers / limit),
-          currentPage: page,
-          limit,
-          hasNextPage: page < Math.ceil(totalUsers / limit),
-          hasPrevPage: page > 1,
-        },
-      },
-      "All users fetched successfully",
-    ),
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "All users fetched Successfully"));
 });
 
 const getAllDoctors = asyncHandler(async (req, res) => {
-  const page = Math.max(parseInt(req.query.page) || 1, 1);
-  const limit = Math.max(parseInt(req.query.limit) || 10, 1);
-  const skip = (page - 1) * limit;
+  const doctors = await Doctor.find()
+    .sort({ createdAt: -1 })
+    .select("-password -refreshToken");
 
-  const [doctors, totalDoctors] = await Promise.all([
-    Doctor.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .select("-password -refreshToken"),
-    Doctor.countDocuments(),
-  ]);
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        doctors,
-        pagination: {
-          totalItems: totalDoctors,
-          totalPages: Math.ceil(totalDoctors / limit),
-          currentPage: page,
-          limit,
-          hasNextPage: page < Math.ceil(totalDoctors / limit),
-          hasPrevPage: page > 1,
-        },
-      },
-      "All doctors fetched successfully",
-    ),
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, doctors, "Doctors fetched Successfully"));
 });
-
 const getAdminDashboard = asyncHandler(async (req, res) => {
   const [totalUsers, totalDoctors, totalMessages] = await Promise.all([
     User.countDocuments({ role: "user" }),
@@ -115,6 +69,44 @@ const registerDoctor = asyncHandler(async (req, res) => {
     speciality,
     degree,
   });
+
+  const mailOptions = {
+    from: `"Medslot" <csouvik2006@gmail.com>`,
+    to: newDoctor.email,
+    subject: "Your Medslot Doctor Account Credentials",
+    html: `
+      <h2>Hello Dr. ${newDoctor.name},</h2>
+
+      <p>Your doctor account has been created successfully on <strong>Medslot</strong>.</p>
+
+      <p>You can log in using the following credentials:</p>
+
+      <div style="background:#f4f4f4;padding:15px;border-radius:8px;">
+        <p><strong>Email:</strong> ${newDoctor.email}</p>
+        <p><strong>Password:</strong> ${password}</p>
+      </div>
+
+      <p>Please change your password after your first login.</p>
+
+      <a
+        href="http://localhost:5173/admin"
+        style="
+          display:inline-block;
+          padding:10px 20px;
+          background:#5F6FFF;
+          color:#fff;
+          text-decoration:none;
+          border-radius:5px;
+        "
+      >
+        Login to Medslot
+      </a>
+
+      <p style="margin-top:20px;">Regards,<br><strong>Medslot Team</strong></p>
+    `,
+  };
+
+  await sendMail(mailOptions);
 
   const createdDoctor = await Doctor.findById(newDoctor?._id).select(
     "-password -refreshToken",

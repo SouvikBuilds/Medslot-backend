@@ -32,8 +32,6 @@ const sendMessage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, newMessage, "Message sent Successfully"));
 });
 
-
-
 const getMyMessages = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
 
