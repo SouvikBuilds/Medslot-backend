@@ -25,9 +25,11 @@ import userRouter from "./routes/user.route.js";
 import doctorRouter from "./routes/doctor.route.js";
 import mesageRouter from "./routes/message.route.js";
 import adminRouter from "./routes/admin.route.js";
+import appointmentRouter from "./routes/appointment.route.js";
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/doctors", doctorRouter);
 app.use("/api/v1/messages", mesageRouter);
 app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/appointments", appointmentRouter);
 
 export default app;

@@ -40,6 +40,27 @@ const userSchema = new Schema(
     magicToken: {
       type: String,
     },
+
+    phone: {
+      type: String,
+      default: "",
+    },
+
+    gender: {
+      type: String,
+      enum: ["", "Male", "Female", "Other"],
+      default: "",
+    },
+
+    dob: {
+      type: String,
+      default: "",
+    },
+
+    address: {
+      line1: { type: String, default: "" },
+      line2: { type: String, default: "" },
+    },
   },
   { timestamps: true },
 );

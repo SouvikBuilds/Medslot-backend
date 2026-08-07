@@ -300,6 +300,28 @@ const verifyMagicLink = asyncHandler(async (req, res) => {
     );
 });
 
+const updateProfile = asyncHandler(async (req, res) => {
+  const { name, phone, gender, dob, address } = req.body;
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        ...(name && { name: name.trim() }),
+        ...(phone !== undefined && { phone }),
+        ...(gender !== undefined && { gender }),
+        ...(dob !== undefined && { dob }),
+        ...(address !== undefined && { address }),
+      },
+    },
+    { new: true },
+  ).select("-password -refreshToken -magicToken");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "Profile updated successfully"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -309,4 +331,5 @@ export {
   requestMagicLink,
   verifyMagicLink,
   generateAccessAndRefreshToken,
+  updateProfile,
 };

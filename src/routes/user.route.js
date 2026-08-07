@@ -7,6 +7,7 @@ import {
   getUser,
   requestMagicLink,
   verifyMagicLink,
+  updateProfile,
 } from "../controllers/user.controller.js";
 import {
   verifyJWT,
@@ -24,5 +25,6 @@ router.post("/magic-login", verifyMagicLink);
 // protected routes
 router.post("/logout", verifyJWT, logOutUser);
 router.get("/me", verifyJWT, getUser);
+router.patch("/update-profile", verifyJWT, updateProfile);
 
 export default router;

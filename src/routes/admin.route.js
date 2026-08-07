@@ -10,23 +10,33 @@ import {
   deleteUser,
   loginAdmin,
 } from "../controllers/admin.controller.js";
+
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
-router.route("/login").post(loginAdmin);
 
-router.route("/dashboard").get(verifyJWT, getAdminDashboard);
+router.post("/login", loginAdmin);
 
-router.route("/users").get(verifyJWT, getAllUsers);
-router.route("/users/:id").delete(verifyJWT, deleteUser);
+router.get("/dashboard", verifyJWT, getAdminDashboard);
 
-router.route("/doctors").get(verifyJWT, getAllDoctors);
-router.route("/doctors").post(verifyJWT, registerDoctor);
-router.route("/doctors/:id").delete(verifyJWT, deleteDoctor);
+router.get("/users", verifyJWT, getAllUsers);
+router.delete("/users/:id", verifyJWT, deleteUser);
 
-router.route("/messages").get(verifyJWT, getAllMessages);
-router.route("/messages/:id").get(verifyJWT, getMessageById);
-router.route("/messages/:id").delete(verifyJWT, deleteMessage);
+router.get("/doctors", verifyJWT, getAllDoctors);
+
+router.post(
+  "/doctors",
+  verifyJWT,
+  upload.single("image"), // IMPORTANT
+  registerDoctor,
+);
+
+router.delete("/doctors/:id", verifyJWT, deleteDoctor);
+
+router.get("/messages", verifyJWT, getAllMessages);
+router.get("/messages/:id", verifyJWT, getMessageById);
+router.delete("/messages/:id", verifyJWT, deleteMessage);
 
 export default router;

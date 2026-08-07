@@ -1,6 +1,7 @@
 import { Message } from "../models/message.model.js";
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
+import { Appointment } from "../models/appointment.model.js";
 import mongoose, { isValidObjectId } from "mongoose";
 import {
   asyncHandler,
@@ -32,10 +33,22 @@ const getAllDoctors = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, doctors, "Doctors fetched Successfully"));
 });
 const getAdminDashboard = asyncHandler(async (req, res) => {
-  const [totalUsers, totalDoctors, totalMessages] = await Promise.all([
-    User.countDocuments({ role: "user" }),
-    Doctor.countDocuments(),
-    Message.countDocuments(),
+  const [totalUsers, totalDoctors, totalMessages, appointments] =
+    await Promise.all([
+      User.countDocuments({ role: "user" }),
+      Doctor.countDocuments(),
+      Message.countDocuments(),
+      Appointment.find()
+        .populate("doctor", "name image")
+        .populate("patient", "name image")
+        .sort({ createdAt: -1 })
+        .limit(10),
+    ]);
+
+  const totalAppointments = await Appointment.countDocuments();
+  const totalRevenue = await Appointment.aggregate([
+    { $match: { status: "completed" } },
+    { $group: { _id: null, total: { $sum: "$amount" } } },
   ]);
 
   return res.status(200).json(
@@ -45,6 +58,9 @@ const getAdminDashboard = asyncHandler(async (req, res) => {
         totalUsers,
         totalDoctors,
         totalMessages,
+        totalAppointments,
+        totalRevenue: totalRevenue[0]?.total || 0,
+        latestAppointments: appointments,
       },
       "Dashboard fetched successfully",
     ),
@@ -52,14 +68,51 @@ const getAdminDashboard = asyncHandler(async (req, res) => {
 });
 
 const registerDoctor = asyncHandler(async (req, res) => {
-  const { name, email, password, speciality, degree } = req.body;
-  if (!name || !email || !password || !speciality || !degree) {
-    console.log("All fields are required");
+  console.log(req.body);
+  console.log(req.file);
+
+  const {
+    name,
+    email,
+    password,
+    speciality,
+    degree,
+    address,
+    experience,
+    fees,
+    about,
+  } = req.body;
+
+  if (
+    !name ||
+    !email ||
+    !password ||
+    !speciality ||
+    !degree ||
+    !address ||
+    !experience ||
+    !fees ||
+    !about
+  ) {
     throw new ApiError(400, "All fields are required");
   }
+
   const doctorExistence = await Doctor.findOne({ email });
+
   if (doctorExistence) {
-    throw new ApiError(400, "Doctor already present with this email id");
+    throw new ApiError(400, "Doctor already exists");
+  }
+
+  let imageUrl = "";
+
+  if (req.file?.path) {
+    const uploadedImage = await uploadOnCloudinary(req.file.path);
+
+    if (!uploadedImage) {
+      throw new ApiError(500, "Image upload failed");
+    }
+
+    imageUrl = uploadedImage.secure_url;
   }
 
   const newDoctor = await Doctor.create({
@@ -68,6 +121,11 @@ const registerDoctor = asyncHandler(async (req, res) => {
     password,
     speciality,
     degree,
+    address,
+    experience,
+    fees,
+    about,
+    image: imageUrl,
   });
 
   const mailOptions = {
@@ -77,40 +135,23 @@ const registerDoctor = asyncHandler(async (req, res) => {
     html: `
       <h2>Hello Dr. ${newDoctor.name},</h2>
 
-      <p>Your doctor account has been created successfully on <strong>Medslot</strong>.</p>
+      <p>Your account has been created successfully.</p>
 
-      <p>You can log in using the following credentials:</p>
-
-      <div style="background:#f4f4f4;padding:15px;border-radius:8px;">
-        <p><strong>Email:</strong> ${newDoctor.email}</p>
-        <p><strong>Password:</strong> ${password}</p>
+      <div style="background:#f5f5f5;padding:15px;border-radius:8px;">
+          <p><b>Email:</b> ${email}</p>
+          <p><b>Password:</b> ${password}</p>
       </div>
 
-      <p>Please change your password after your first login.</p>
-
-      <a
-        href="http://localhost:5173/admin"
-        style="
-          display:inline-block;
-          padding:10px 20px;
-          background:#5F6FFF;
-          color:#fff;
-          text-decoration:none;
-          border-radius:5px;
-        "
-      >
-        Login to Medslot
-      </a>
-
-      <p style="margin-top:20px;">Regards,<br><strong>Medslot Team</strong></p>
+      <p>Please change your password after logging in.</p>
     `,
   };
 
   await sendMail(mailOptions);
 
-  const createdDoctor = await Doctor.findById(newDoctor?._id).select(
+  const createdDoctor = await Doctor.findById(newDoctor._id).select(
     "-password -refreshToken",
   );
+
   return res
     .status(201)
     .json(

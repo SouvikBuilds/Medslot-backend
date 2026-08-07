@@ -8,23 +8,35 @@ cloudinary.config({
   api_secret: config.CLOUDINARY_API_SECRET,
 });
 
+try {
+  const ping = await cloudinary.api.ping();
+  console.log(ping);
+} catch (err) {
+  console.log(err);
+}
+
 export const uploadOnCloudinary = async (localFilePath) => {
   try {
-    if (!localFilePath) {
-      console.log("File path is missing.");
-      return null;
-    }
+    console.log(cloudinary.config());
+
     const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
+      folder: "medslot",
+      resource_type: "image",
     });
+
+    console.log(response);
+
     fs.unlinkSync(localFilePath);
+
     return response;
   } catch (error) {
-    console.log("Error while uploading file.", error);
+    console.log("Cloudinary Error:");
+    console.log(error);
+
     if (fs.existsSync(localFilePath)) {
       fs.unlinkSync(localFilePath);
-      console.log("🗑️ Local temp file deleted after error");
     }
+
     return null;
   }
 };
