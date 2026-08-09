@@ -211,7 +211,7 @@ const requestMagicLink = asyncHandler(async (req, res) => {
     validateBeforeSave: false,
   });
 
-  const magicLink = `https://medslot.souvik.space/magic-login?token=${magicToken}`;
+  const magicLink = `${config.ORIGIN}/magic-login?token=${magicToken}`;
 
   const mailOptions = {
     from: `"Medslot Auth" <csouvik2006@gmail.com>`,
