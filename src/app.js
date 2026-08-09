@@ -32,4 +32,14 @@ app.use("/api/v1/messages", mesageRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/appointments", appointmentRouter);
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.log("[GLOBAL ERROR]", err.message);
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});
+
 export default app;
