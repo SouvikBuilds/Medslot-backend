@@ -9,30 +9,22 @@ cloudinary.config({
 });
 
 try {
-  const ping = await cloudinary.api.ping();
-  console.log(ping);
+  await cloudinary.api.ping();
 } catch (err) {
-  console.log(err);
+  // cloudinary unreachable on startup
 }
 
 export const uploadOnCloudinary = async (localFilePath) => {
   try {
-    console.log(cloudinary.config());
-
     const response = await cloudinary.uploader.upload(localFilePath, {
       folder: "medslot",
       resource_type: "image",
     });
 
-    console.log(response);
-
     fs.unlinkSync(localFilePath);
 
     return response;
   } catch (error) {
-    console.log("Cloudinary Error:");
-    console.log(error);
-
     if (fs.existsSync(localFilePath)) {
       fs.unlinkSync(localFilePath);
     }
@@ -43,16 +35,12 @@ export const uploadOnCloudinary = async (localFilePath) => {
 
 export const deleteFromCloudinary = async (url) => {
   try {
-    if (!url) {
-      console.log("Url is missing.");
-      return null;
-    }
+    if (!url) return null;
     const parts = url.split("/");
     const publicId = parts[parts.length - 1].split(".")[0];
     const response = await cloudinary.uploader.destroy(publicId);
     return response;
   } catch (error) {
-    console.log("Error while deleting file.", error);
     return null;
   }
 };

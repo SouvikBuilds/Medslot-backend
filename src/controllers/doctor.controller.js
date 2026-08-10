@@ -9,7 +9,6 @@ const generateAccessRefreshToken = async (doctorId) => {
   try {
     const doctor = await Doctor.findById(doctorId);
     if (!doctor) {
-      console.log("No Doctor found with this id");
       throw new ApiError(404, "Doctor not found");
     }
     const accessToken = doctor.generateAccessToken(doctorId);
@@ -20,7 +19,6 @@ const generateAccessRefreshToken = async (doctorId) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
-    console.log("Error while generating access and refresh token.");
     throw new ApiError(
       500,
       "Something went wrong while generating refresh and access token.",
@@ -32,19 +30,16 @@ const loginDoctor = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password || email.trim() === "" || password.trim() === "") {
-    console.log("Email and password are required");
     throw new ApiError(400, "Email and password are required.");
   }
 
   const doctor = await Doctor.findOne({ email: email });
   if (!doctor) {
-    console.log("No doctor found with this email");
     throw new ApiError(404, "Doctor not found with this email");
   }
 
   const isPasswordCorrect = await doctor.comparePassword(password);
   if (!isPasswordCorrect) {
-    console.log("The password is not correct.");
     throw new ApiError(401, "Password not matched");
   }
 
@@ -158,7 +153,6 @@ const getAllDoctors = asyncHandler(async (req, res) => {
 const getDoctorById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!id) {
-    console.log("No id provided");
     throw new ApiError(400, "Doctor id is required");
   }
   if (!isValidObjectId(id)) {
@@ -172,24 +166,20 @@ const getDoctorById = asyncHandler(async (req, res) => {
 const changePassword = asyncHandler(async (req, res) => {
   const { password, newPassword, confirmedPassword } = req.body;
   if (!password || !newPassword || !confirmedPassword) {
-    console.log("All fields are required");
     throw new ApiError(400, "All fields are required");
   }
 
   if (newPassword !== confirmedPassword) {
-    console.log("New password and confirmed password do not match");
     throw new ApiError(400, "New password and confirmed password do not match");
   }
 
   const doctor = await Doctor.findById(req.doctor?._id);
   if (!doctor) {
-    console.log("no doctor found with this id");
     throw new ApiError(404, "No Doctor is found with this id");
   }
 
   const isPasswordCorrect = await doctor.comparePassword(password);
   if (!isPasswordCorrect) {
-    console.log("Password is incorrect");
     throw new ApiError(400, "Password is incorrect");
   }
 
@@ -207,7 +197,6 @@ const updateProfile = asyncHandler(async (req, res) => {
 
   const doctor = await Doctor.findById(id);
   if (!doctor) {
-    console.log("No doctor found with this id");
     throw new ApiError(404, "No Doctor is found with this id");
   }
 
@@ -228,19 +217,16 @@ const updateProfile = asyncHandler(async (req, res) => {
 const updateProfileImage = asyncHandler(async (req, res) => {
   const imagePath = req.file?.path;
   if (!imagePath) {
-    console.log("No image file path provided.");
     throw new ApiError(400, "Image file is required");
   }
 
   const doctor = await Doctor.findById(req.doctor?._id);
   if (!doctor) {
-    console.log("Doctor not found");
     throw new ApiError(404, "Doctor not found");
   }
 
   const imageUrl = await uploadOnCloudinary(imagePath);
   if (!imageUrl.secure_url) {
-    console.log("Image url not found");
     throw new ApiError(404, "Image url is missing");
   }
 
@@ -279,7 +265,6 @@ const updateAvailability = asyncHandler(async (req, res) => {
   ).select("-password -refreshToken");
 
   if (!response) {
-    console.log("Doctor not found");
     throw new ApiError(404, "Doctor not found");
   }
 

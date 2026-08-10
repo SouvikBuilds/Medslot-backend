@@ -98,8 +98,6 @@ const loginUser = asyncHandler(async (req, res) => {
     user._id,
   );
 
-  console.log(user);
-
   return res
     .status(200)
     .cookie("accessToken", accessToken, cookieOptions)
@@ -157,9 +155,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
-  console.log("Logout calling");
   if (!req.user?._id) {
-    console.log("User not authenticated");
     throw new ApiError(403, "User is not authenticated");
   }
 

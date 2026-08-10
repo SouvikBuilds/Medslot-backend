@@ -68,9 +68,6 @@ const getAdminDashboard = asyncHandler(async (req, res) => {
 });
 
 const registerDoctor = asyncHandler(async (req, res) => {
-  console.log(req.body);
-  console.log(req.file);
-
   const {
     name,
     email,
@@ -162,13 +159,11 @@ const registerDoctor = asyncHandler(async (req, res) => {
 const deleteDoctor = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!isValidObjectId(id)) {
-    console.log("Not valid object id");
     throw new ApiError(400, "Object id of doctor is invalid");
   }
 
   const response = await Doctor.findByIdAndDelete(id);
   if (!response) {
-    console.log("No doctor with this id found.");
     throw new ApiError(404, "Doctor with this id not found");
   }
   return res
@@ -179,12 +174,10 @@ const deleteDoctor = asyncHandler(async (req, res) => {
 const deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!isValidObjectId(id)) {
-    console.log("Not valid user id");
     throw new ApiError(400, "Invalid user id");
   }
   const response = await User.findByIdAndDelete(id);
   if (!response) {
-    console.log("No user with this id found");
     throw new ApiError(404, "User not found with this id");
   }
   return res
@@ -224,12 +217,10 @@ const getAllMessages = asyncHandler(async (req, res) => {
 const getMessageById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!isValidObjectId(id)) {
-    console.log("Invalid message id");
     throw new ApiError(400, "Not valid message id");
   }
   const message = await Message.findById(id).populate("user", "name email");
   if (!message) {
-    console.log("No message found with this id");
     throw new ApiError(404, "Message doesn't exist");
   }
   return res
@@ -240,13 +231,11 @@ const getMessageById = asyncHandler(async (req, res) => {
 const deleteMessage = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!isValidObjectId(id)) {
-    console.log("Message id is invalid");
     throw new ApiError(400, "Message id invalid");
   }
 
   const response = await Message.findByIdAndDelete(id);
   if (!response) {
-    console.log("Message not found");
     throw new ApiError(404, "Message not found");
   }
   return res
@@ -285,8 +274,6 @@ const loginAdmin = asyncHandler(async (req, res) => {
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   };
-  console.log(user);
-
   return res
     .status(200)
     .cookie("accessToken", accessToken, cookieOptions)

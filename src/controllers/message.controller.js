@@ -15,7 +15,6 @@ const sendMessage = asyncHandler(async (req, res) => {
     subject.trim() === "" ||
     message.trim() === ""
   ) {
-    console.log("All fields are required");
     throw new ApiError(400, "All fields are required");
   }
 
