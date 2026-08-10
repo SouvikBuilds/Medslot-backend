@@ -4,10 +4,8 @@ import config from "../config/envConfig.js";
 import { Doctor } from "../models/doctor.model.js";
 
 export const verifyDoctorJWT = asyncHandler(async (req, res, next) => {
-  console.log("Cookies:", req.cookies);
-  console.log("Access Token:", req.cookies?.accessToken);
   const token =
-    req.cookies?.accessToken ||
+    req.cookies?.doctorAccessToken ||
     req.headers["authorization"]?.replace("Bearer ", "");
 
   if (!token) {
@@ -17,7 +15,7 @@ export const verifyDoctorJWT = asyncHandler(async (req, res, next) => {
   let decodedToken;
 
   try {
-    decodedToken = jwt.verify(token, config.accessToken);
+    decodedToken = jwt.verify(token, config.doctorAccessToken);
   } catch (error) {
     throw new ApiError(401, "Invalid or expired access token");
   }

@@ -63,8 +63,8 @@ const loginDoctor = asyncHandler(async (req, res, next) => {
   );
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("doctorAccessToken", accessToken, options)
+    .cookie("doctorRefreshToken", refreshToken, options)
     .json(
       new ApiResponse(
         200,
@@ -76,7 +76,7 @@ const loginDoctor = asyncHandler(async (req, res, next) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
-    req.cookies?.refreshToken || req.body?.refreshToken;
+    req.cookies?.doctorRefreshToken || req.body?.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Refresh token is required");
@@ -110,8 +110,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, cookieOptions)
-    .cookie("refreshToken", newRefreshToken, cookieOptions)
+    .cookie("doctorAccessToken", accessToken, cookieOptions)
+    .cookie("doctorRefreshToken", newRefreshToken, cookieOptions)
     .json(new ApiResponse(200, {}, "Access token refreshed successfully"));
 });
 
@@ -140,8 +140,8 @@ const logOutDoctor = asyncHandler(async (req, res) => {
   };
   return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("doctorAccessToken", options)
+    .clearCookie("doctorRefreshToken", options)
     .json(new ApiResponse(200, {}, "Logout of doctor Successful"));
 });
 

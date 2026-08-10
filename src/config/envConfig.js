@@ -7,6 +7,7 @@ const config = {
   DB_NAME: process.env.DB_NAME,
   MONGO_URI: process.env.MONGO_URI,
   accessToken: process.env.accessToken,
+  doctorAccessToken: process.env.doctorAccessToken,
   magicToken: process.env.magicToken,
   accessTokenExpiry: process.env.accessTokenExpiry,
   refreshToken: process.env.refreshToken,

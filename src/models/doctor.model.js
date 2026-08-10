@@ -107,7 +107,7 @@ doctorSchema.methods.generateAccessToken = function () {
       _id: this._id,
       email: this.email,
     },
-    config.accessToken,
+    config.doctorAccessToken,
     { expiresIn: config.accessTokenExpiry },
   );
 };
