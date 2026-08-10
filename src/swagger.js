@@ -5,7 +5,7 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: { title: "Doctor Appointment API", version: "1.0.0" },
-    servers: [{ url: "/api/v1" }],
+    servers: [{ url: "https://medslot-backend.onrender.com/api/v1" }],
     components: {
       securitySchemes: {
         bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
